@@ -44,6 +44,9 @@ yarn-error.log*
 # font files (large, download separately)
 /fonts/*.ttf
 
+# claude code
+.claude/settings.local.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
