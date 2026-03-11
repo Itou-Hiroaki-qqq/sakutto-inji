@@ -1,0 +1,16 @@
+name = "sakutto-inji"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+main = ".open-next/worker.js"
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+# Cloudflare D1
+[[d1_databases]]
+binding = "DB"
+database_name = "sakutto-inji-db"
+database_id = "a63f0745-9a0e-4ccc-a53b-0e1a4469b85d"
+
+# Cloudflare R2
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "sakutto-inji-r2"

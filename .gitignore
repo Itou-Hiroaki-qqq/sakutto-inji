@@ -36,6 +36,14 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cloudflare
+.open-next/
+.wrangler/
+.dev.vars
+
+# font files (large, download separately)
+/fonts/*.ttf
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

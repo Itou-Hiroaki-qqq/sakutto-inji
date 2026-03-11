@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# さくっと印字（sakutto-inji）
 
-## Getting Started
+記入用紙をスキャンしてPDFとして取り込み、画面上でテキスト配置位置を指定し、ブランクの実物用紙に直接印字できるWebアプリケーション。
 
-First, run the development server:
+## 主な機能
+
+- PDF/JPEG/PNGの用紙スキャン取り込み
+- 画面上でのテキストフィールド配置（ドラッグ&ドロップ）
+- フォント・サイズ・色・回転の個別設定
+- 横書き/縦書き対応
+- 印刷用PDF生成&ダウンロード
+- テンプレートの保存・複製・エクスポート/インポート
+- カスタム用紙サイズ対応（A4/B5/A5/はがき/払込取扱票 + ユーザー定義）
+- ユーザー認証（新規登録/ログイン）
+
+## 技術スタック
+
+- **フロントエンド**: Next.js 15 (App Router) + Tailwind CSS v4
+- **認証**: Better Auth
+- **DB**: Cloudflare D1 (SQLite)
+- **ストレージ**: Cloudflare R2
+- **ホスティング**: Cloudflare Workers (@opennextjs/cloudflare)
+- **PDF表示**: pdfjs-dist v5
+- **PDF生成**: pdf-lib + fontkit
+- **フォント**: Noto Sans JP / Noto Serif JP
+
+## セットアップ
+
+### 1. 依存パッケージのインストール
+
+```bash
+npm install
+```
+
+### 2. 環境変数の設定
+
+`.dev.vars.example`をコピーして`.dev.vars`を作成し、値を設定:
+
+```bash
+cp .dev.vars.example .dev.vars
+```
+
+### 3. ローカルDBの初期化
+
+```bash
+npx wrangler d1 execute sakutto-inji-db --local --file=db/schema.sql
+```
+
+### 4. フォントファイルの配置
+
+`fonts/`ディレクトリに以下のファイルを配置:
+
+- NotoSansJP-Regular.ttf
+- NotoSansJP-Bold.ttf
+- NotoSerifJP-Regular.ttf
+- NotoSerifJP-Bold.ttf
+
+フォントは[Google Fonts](https://fonts.google.com/noto)からダウンロードできます。
+
+### 5. ローカルR2にフォントをアップロード
+
+```bash
+bash scripts/upload-fonts.sh
+```
+
+### 6. 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 でアクセスできます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 本番デプロイ
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Cloudflare Workersにデプロイします。
 
-## Learn More
+```bash
+# D1データベース作成
+npx wrangler d1 create sakutto-inji-db
 
-To learn more about Next.js, take a look at the following resources:
+# スキーマ適用
+npx wrangler d1 execute sakutto-inji-db --remote --file=db/schema.sql
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# R2バケット作成&フォントアップロード
+npx wrangler r2 bucket create sakutto-inji-r2
+bash scripts/upload-fonts.sh --remote
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# シークレット設定
+npx wrangler secret put BETTER_AUTH_SECRET
+npx wrangler secret put BETTER_AUTH_URL
 
-## Deploy on Vercel
+# ビルド&デプロイ
+npx opennextjs-cloudflare build && npm run deploy
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ライセンス
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private

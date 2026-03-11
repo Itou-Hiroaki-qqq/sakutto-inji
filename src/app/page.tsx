@@ -1,65 +1,153 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { Header } from "@/components/Header";
+import { TemplateCard } from "@/components/TemplateCard";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ExportDialog } from "@/components/ExportDialog";
+import { ImportDialog } from "@/components/ImportDialog";
+import { useTemplates } from "@/hooks/useTemplates";
+
+export default function HomePage() {
+  const { data: session, isPending } = authClient.useSession();
+  const router = useRouter();
+  const {
+    templates,
+    loading,
+    query,
+    setQuery,
+    sort,
+    setSort,
+    deleteTemplate,
+    refresh,
+  } = useTemplates();
+
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [exportTarget, setExportTarget] = useState<string | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/login");
+    }
+  }, [session, isPending, router]);
+
+  if (isPending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-gray-400">読み込み中...</p>
+      </div>
+    );
+  }
+
+  if (!session) return null;
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await deleteTemplate(deleteTarget);
+    setDeleteTarget(null);
+  };
+
+  const exportTemplate = exportTarget
+    ? templates.find((t) => t.id === exportTarget)
+    : null;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="mx-auto max-w-5xl px-6 py-8">
+        {/* ヘッダー行 */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-800">テンプレート一覧</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setImportOpen(true)}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              インポート
+            </button>
+            <button
+              onClick={() => router.push("/templates/new")}
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              + 新規作成
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {/* 検索・並び替え */}
+        <div className="mt-4 flex items-center gap-3">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="テンプレートを検索..."
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as "updated_at" | "name")}
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <option value="updated_at">更新日順</option>
+            <option value="name">名前順</option>
+          </select>
         </div>
+
+        {/* テンプレート一覧 */}
+        {loading ? (
+          <div className="mt-8 text-center text-gray-400">読み込み中...</div>
+        ) : templates.length === 0 ? (
+          <div className="mt-8 text-center text-gray-400">
+            <p>テンプレートはまだありません。</p>
+            <p className="mt-1 text-sm">
+              「新規作成」からテンプレートを作成してください。
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {templates.map((t) => (
+              <TemplateCard
+                key={t.id}
+                template={t}
+                onDelete={setDeleteTarget}
+                onExport={setExportTarget}
+              />
+            ))}
+          </div>
+        )}
       </main>
+
+      {/* 削除確認ダイアログ */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="テンプレートを削除"
+        message="このテンプレートを削除しますか？この操作は取り消せません。"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* エクスポートダイアログ */}
+      {exportTemplate && (
+        <ExportDialog
+          open={!!exportTarget}
+          templateId={exportTemplate.id}
+          templateName={exportTemplate.name}
+          hasPdf={!!exportTemplate.scan_pdf_key}
+          paperWidthMm={exportTemplate.paper_width_mm}
+          paperHeightMm={exportTemplate.paper_height_mm}
+          onClose={() => setExportTarget(null)}
+        />
+      )}
+
+      {/* インポートダイアログ */}
+      <ImportDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={refresh}
+      />
     </div>
   );
 }

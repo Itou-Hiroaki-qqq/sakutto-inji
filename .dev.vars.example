@@ -1,0 +1,2 @@
+BETTER_AUTH_SECRET=your-secret-key-at-least-32-chars-long-here
+BETTER_AUTH_URL=http://localhost:8787
