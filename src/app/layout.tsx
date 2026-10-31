@@ -11,6 +11,7 @@ const notoSansJP = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: "さくっと印字",
   description: "記入用紙をスキャンして、テキスト配置を指定し、ブランクの実物用紙に直接印字できるWebアプリ",
+  robots: "noindex, nofollow",
   manifest: "/manifest.json",
 };
 

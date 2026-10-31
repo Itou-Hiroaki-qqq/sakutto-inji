@@ -12,19 +12,19 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.17.1",
+    "@opennextjs/cloudflare": "^1.20.15",
     "@pdf-lib/fontkit": "^1.1.1",
-    "better-auth": "^1.5.4",
-    "drizzle-orm": "^0.45.1",
-    "next": "^15.5.12",
+    "better-auth": "^1.7.14",
+    "drizzle-orm": "^0.45.4",
+    "next": "^16.4.3",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.5.207",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260307.1",
+    "@cloudflare/workers-types": "^5.20261031.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -35,6 +35,6 @@
     "eslint-config-next": "^15.5.12",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "wrangler": "^4.72.0"
+    "wrangler": "^4.156.0"
   }
 }
